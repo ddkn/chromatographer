@@ -6,6 +6,12 @@ This readme will disscuss some of the design descisions for labratory technologi
 
 I hope that the code and explanation provided is useful in your future lab endeavours.
 
+
+## Disclaimer
+
+This is intended as a reference for technologists and students for designing lab software. Learning on how to code Python or Qt can be referenced from books to online tutorials outside of this project.
+
+
 ## Software required
 
 * Anaconda 3
@@ -37,15 +43,15 @@ There are many ways to approach this problem. One is to write a basic script tha
 
 Another would be to implement a script that can take commandline arguments so you can dynamically change settings from experiment to experiment without altering the code, which is done in a more flexible way in `chromatographer.py`.  
 
-The third option is to write the code intertwined with a graphical user interface (GUI). This is the fastest solution for a GUI and is what most people would do for labratory software. However, maintence of such code becomes challenging as time goes on, or new technologists inherit the code.
+The third option is to write the code intertwined with a graphical user interface (GUI). *This is the fastest solution for a GUI and is what most people would do for labratory software*. However, maintence of such code becomes challenging as time goes on, or new technologists inherit the code.
 
 The final option is to write the software separated to have both a commandline version as well a GUI version. This segregation has several benefits, one the internal code can be tested without the GUI to ensure proper operation; the GUI can be written and tested separately. Doing this allows for a dramatic drop in debugging time during development. Also, the internal code can have a different license than that of the GUI (see section Licensing below). 
 
 The `chromatographer.py` is written to work as a standalone application for commandline. Some function definitions may seem odd and unecessary, i.e., the `send_*` methods of `Chromatographer` class. However, these were necessary to for adding required hooks for dealing with the GUI, see the `ChromatorgapherQtWorker` class in `chromatorgapher-qt.py`.
 
-In order to add the GUI hooks (signals/slots described in sections below) into the code, the `chromatorgapher.Chromatographer` class is subclassed into `chromatographer-qt.ChromatographerQtWorker`. A worker object is created with all of the signals and slots defined, then moved to it's own thread so that the GUI and the code defined in `collect.data` can operate independently without locking up the GUI from the user. This is necessary if they want to cancel the operation or view dynamic updates from the plot.
+In order to add the GUI hooks (signals/slots described in sections below) into the code, the `chromatorgapher.Chromatographer` class is subclassed into `chromatographer-qt.ChromatographerQtWorker`. A worker object is created with all of the signals and slots defined, then moved to it's own thread so that the GUI and the code defined in `collect_data` method can operate independently without locking up the GUI from the user. This is necessary if they want to cancel the operation or view dynamic updates from the plot.
 
-The plot features is not part of *Qt Creator* software. A generic `QtWidgets.QWidget` is placed with a `matplotlib` figure and controls set into it's own layout and then set onto the QWidget. This is done in code as seen in the `init_ui()` method.
+The plot features in Qt are not part of *Qt Creator* software. A generic `QtWidgets.QWidget` is placed down, where a `matplotlib` figure and figure controls can be set into it's own layout and then set as a layout onto the generic QWidget. This is done in code as seen in the `init_ui()` method.
 
 The `chromatographer.py` allows for GUI updates during the cycle time to update the progress bar of the cycle time. Not necessary, but a convenient feature for someone glancing at the software to see where it is at currently. 
 
@@ -62,8 +68,14 @@ This is jargon used in Qt to describe what operation/function/method to perform 
 
 ## Licenses
 
-This isn't meant to be a license war or what license you should use, but merely something to think about before blindly using code without understanding your rights.
+**If the code will never leave the labratory or the company, this isn't a concern**. *If the code is to be distributed publically, then this is something you must consider*.
+
+This isn't meant to be a license war or what license you should use, but merely something to think about before blindly using code without understanding your rights. This is not meant to be an indepth understanding, but give you a *basic* grasp on licenses. *If you are actually concerned with this, then seek proper legal counsel*.
 
 It isn't usually a concern to segregate code for labratory applications, as separate licenses may seem arbitrary. When developing software that may go commerical *after* lab work, this becomes a viable concern if you need/want to keep the details from clients or users. This is something quite overlooked by people using software without understanding the usage requirements from licenses.
 
-One concern is that the opensource version of PyQt5 is licensed under the GPL v3 which means any attached code becomes GPL v3; this is why I provide the `COPYING` file as required by the GPL v3. This is fine if you want to distribute your code as outlined by the GPL v3, but if you are not then this is an important step. By separating the code as I did in this project I am able to take the commandline version and create a new GUI using PySide2, and keep the distribution rights as I originally intended with my license. I could also completely write the GUI in another toolkit like GTK or Tkinter. 
+For example, I prefer to use the license outlined by [OpenBSD](https://cvsweb.openbsd.org/src/share/misc/license.template?rev=HEAD), which is modeled after the ISC license. For code I am willing to share, all I care about is ensuring my name is acknowledged in the Copyright of the code. Other developers have more concerns on how their code is handled, and license their code appropriately for their concerns. Some other popular Licenses are: BSD 2-Clause, BSD 3-Clause, GPL v3, LGPL v3, MIT, and Apache License v2.0.
+
+One concern is that the opensource version of PyQt5 is licensed under the GPL v3 which means any attached code becomes GPL v3 upon distribution (where a public github repository is considered distributing) otherwise this is a violation of the GPL v3 License; this is why I provide the `COPYING` file as required by the GPL v3. This is fine if you want to distribute your code as outlined by the GPL v3, but if you are not distributing your code then this is not required if it stays within the labratory or company.
+
+By separating the code as I did in this project I am able to take the commandline version and create a new GUI using PySide2, and keep the distribution rights as I originally intended with my license as long as I adhere to the LGPL v3 requirements. I could also completely write the GUI in another toolkit like GTK or Tkinter. 
