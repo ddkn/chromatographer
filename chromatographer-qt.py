@@ -87,7 +87,7 @@ class ChromatographerQt(QtWidgets.QMainWindow):
             self.comboDAQDev.addItems(cg.system.devices.device_names)
         except DaqNotFoundError as err_msg:
             print(err_msg)
-            print("Exiting.") 
+            print("Exiting.")
             sys.exit(1)
 
         plotlayout = QtWidgets.QVBoxLayout()
@@ -136,7 +136,12 @@ class ChromatographerQt(QtWidgets.QMainWindow):
         sample_t = self.get_sample_window()
         sample_dt = self.get_sample_delta()
 
-        self.worker = ChromatographerQtWorker(daq_dev, 
+        # If worker is present close DAQ tasks befer reinitializing
+        worker_instance = getattr(self, "worker", None)
+        if worker_instance is not None:
+            self.worker.close_tasks()
+
+        self.worker = ChromatographerQtWorker(daq_dev,
                                               cycle_t, sample_t,
                                               sample_dt)
         self.worker.data_ready.connect(self.update_plot)

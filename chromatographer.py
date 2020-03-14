@@ -71,7 +71,7 @@ class Chromatographer:
         self.task_digital = nidaqmx.Task()
         self.task_digital.do_channels.add_do_chan('{dev}/port0/line0:7'.format(dev=daq_id))
         self.task_digital.start()
-         
+
         self.cycle_time = cycle_time
         self.cycle_time_remaining = cycle_time
 
@@ -84,12 +84,12 @@ class Chromatographer:
     def __str__(self):
         return "Chromatographer Class"
 
-    def __del__(self):
-        """Stops and closes any defined tasks if class is lost or overwritten"""
+    def close_tasks(self):
+        """Stops and closes any defined analog and digital tasks"""
         print('Cleaning up DAQ tasks')
         self.task_digital.stop()
         self.task_digital.close()
-        
+
         self.task_analog.stop()
         self.task_analog.close()
 
@@ -161,7 +161,7 @@ class Chromatographer:
         open_valve(VALVE_1|VALVE_2)
 
         Where VALVE_1 = 0x01 and VALVE_2 = 0x02.
-		"""
+        """
         valves_state = self.task_digital.read()
         new_valves_state = valves_state | valves
         self.task_digital.write([new_valves_state])
@@ -211,16 +211,26 @@ if __name__ == '__main__':
     from sys import exit
 
     parser = ArgumentParser()
-    parser.add_argument('-c', '--cycle-time', type=int, default=300,
-                        help="Cycle time in seconds")
-    parser.add_argument('-T', '--sample-window', type=int, default=30,
-                        help="Sample window (t) in seconds")
-    parser.add_argument('-t', '--sample-delta', type=float,  default=0.5,
-                        help="Sample interval (dt) in seconds")
     parser.add_argument('-d', '--daq-device', type=str, default=DAQ_DEFAULT,
                         help="DAQ device")
     parser.add_argument('-l', '--list-devices', action="store_true",
                         help="Display available DAQ devices")
+
+    group_cfg = parser.add_argument_group("Chromatographer configuration")
+    group_cfg.add_argument('-c', '--cycle-time', type=int, default=300,
+                           help="Cycle time in seconds")
+    group_cfg.add_argument('-T', '--sample-window', type=int, default=30,
+                           help="Sample window (t) in seconds")
+    group_cfg.add_argument('-t', '--sample-delta', type=float,  default=0.5,
+                           help="Sample interval (dt) in seconds")
+
+    group_man = parser.add_argument_group("Manual valve control")
+    group_man.add_argument('-o', '--open', action="store_true",
+                           help="Open specified valve (-v or --valve).")
+    group_man.add_argument('-s', '--shut', action="store_true",
+                           help="shut specified valve (-v or --valve).")
+    group_man.add_argument('-v', '--valve', type=int, default=0,
+                           help="shut specified valve (-v or --valve).")
 
     args = parser.parse_args()
 
@@ -236,6 +246,23 @@ if __name__ == '__main__':
 
     worker = Chromatographer(daq_device, cycle_time, sample_t, sample_dt)
 
+    if (args.open == True) and (args.shut == True):
+        print("!! CONFLICT: Only pass one valve control option at a time")
+        exit(1)
+
+    if args.valve == 1:
+        valve = VALVE_1
+    elif args.valve == 7:
+        valve = VALVE_7
+    elif args.valve != 0:
+        print("!! WARN: Only valves are 1 and 7 are manually controlled.")
+        exit(1)
+
+    if args.open == True:
+        worker.open_valve(valve)
+    elif args.shut == True:
+        worker.close_valve(valve)
+
     print("# Date :", datetime.date.today().ctime())
     print("# Sample window (t) :", sample_t)
     print("# Sample interval (dt) :", sample_dt)
@@ -244,4 +271,4 @@ if __name__ == '__main__':
           worker.collect_data()
     except Exception as err:
         print(err)
-        del worker
+    worker.close_tasks()
