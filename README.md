@@ -1,10 +1,12 @@
 # chromatographer/chromatographer-qt
 
-These scripts are an reference example for designing labratory data collection software using python and the **nidaqmx** module provided from National Instruments. *Note that in the current iteration, this only supports Microsoft Windows operating systems*. These scripts control valves for a Chromatographer system and output measurement through differential analog output. 
+These scripts are an reference example for designing labratory data collection software using python and the **nidaqmx** module provided from National Instruments. *Note that in the current iteration, this only supports Microsoft Windows operating systems*, future versions may include [PyDAQmx](https://pythonhosted.org/PyDAQmx/). These scripts control valves for a Chromatographer system and output measurement through differential analog output. 
 
 This readme will disscuss some of the design descisions for labratory technologists and students wishing to design their own data collection software. This example shows a complete setup for separating code into a commandline and GUI interfaces---and by proxy---how to segregate code due to licensing concerns or conflicts.
 
 I hope that the code and explanation provided is useful in your future lab endeavours.
+
+[Preview](https://david.science/img/chromatographer-preview.png)
 
 
 ## Disclaimer

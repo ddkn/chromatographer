@@ -85,7 +85,11 @@ class ChromatographerQt(QtWidgets.QMainWindow):
         # Populate available DAQ Devices for selection
         try:
             self.comboDAQDev.addItems(cg.system.devices.device_names)
-        except nidaqmx.DaqNotFoundError as err_msg:
+        except nidaqmx.DaqError as err_msg:
+            print(err_msg)
+            print("Exiting.")
+            sys.exit(1)
+        except Exception as err_msg:
             print(err_msg)
             print("Exiting.")
             sys.exit(1)
