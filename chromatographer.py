@@ -28,7 +28,8 @@ using python and the nidaqmx interface.
 """
 
 import nidaqmx
-from numpy import arange, diff
+from nidaqmx.constants import TerminalConfiguration as termcfg
+from numpy import arange, mean
 import time
 
 # Valve ID constants for bitwise write operations
@@ -61,10 +62,11 @@ class Chromatographer:
         # System Configuration for NI DAQs
         self.system = nidaqmx.system.System()
 
-        # Configure DAQ to use analog input 1 and 9 for differential output
+        # Configure DAQ to use analog input 1 and 9 for differential output as
+        # per the user manual for the DAQ 6014: ai{i, i+8} for differential
         self.task_analog = nidaqmx.Task()
-        self.task_analog.ai_channels.add_ai_voltage_chan("{dev}/ai1".format(dev=daq_id))
-        self.task_analog.ai_channels.add_ai_voltage_chan("{dev}/ai9".format(dev=daq_id))
+        self.task_analog.ai_channels.add_ai_voltage_chan("{dev}/ai1".format(dev=daq_id),
+                                                         terminal_config=termcfg.DIFFERENTIAL)
         self.task_analog.start()
 
         # Use digital IO lined 0->7
@@ -116,9 +118,9 @@ class Chromatographer:
             for t in arange(0, self.sample_t, self.sample_dt):
                 if self.stop_requested == True:
                     break
-                # Take differential of signals
-                signals = self.task_analog.read()
-                self.send_data_ready(t, diff(signals)[0])
+                # Average N samples per measurement
+                signals = self.task_analog.read(number_of_samples_per_channel=10)
+                self.send_data_ready(t, mean(signals))
                 time.sleep(self.sample_dt)
             self.reset_to_cycle_state()
             self.send_finished()

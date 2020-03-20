@@ -33,7 +33,6 @@ import chromatographer as cg
 import datetime
 from functools import partial
 import nidaqmx
-from numpy import arange, diff
 import matplotlib.animation as animation
 from matplotlib.backends.qt_compat import QtCore, QtGui, QtWidgets, is_pyqt5
 if is_pyqt5():
